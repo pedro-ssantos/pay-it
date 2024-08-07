@@ -1,69 +1,210 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Pay-It
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+O Pay-it é uma plataforma de pagamentos que permite depósitos e transferências de dinheiro entre usuários. A aplicação é organizada utilizando Domain-Driven Design (DDD) para garantir escalabilidade, modularidade e manutenabilidade.
 
-## About Laravel
+## Índice
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Recursos](#recursos)
+- [SLA](#sla)
+- [Modelos](#modelos)
+- [Estrutura de Banco de Dados](#estrutura-de-banco-de-dados)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Domínios](#domínios)
+  - [Domínio de Usuários (User Domain)](#domínio-de-usuários-user-domain)
+  - [Domínio de Carteiras (Wallet Domain)](#domínio-de-carteiras-wallet-domain)
+  - [Domínio de Transações (Transaction Domain)](#domínio-de-transações-transaction-domain)
+  - [Domínio de Notificações (Notification Domain)](#domínio-de-notificações-notification-domain)
+  - [Domínio de Auditoria (Audit Domain)](#domínio-de-auditoria-audit-domain)
+- [Setup](#setup)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Recursos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Cadastro de usuários com nome completo, CPF, e-mail e senha. CPF e e-mail devem ser únicos no sistema.
+- Transferências de dinheiro entre usuários comuns e lojistas.
+- Lojistas só podem receber dinheiro, não enviar. Apenas usuários comuns podem enviar dinheiro.
+- Validação de saldo antes da transferência.
+- Notificações de transações.
+- Auditoria de operações.
 
-## Learning Laravel
+## SLA
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Availability: 99%
+- Accuracy: 100%
+- Capacity: 100 RPS
+- Latency: p95 = 0.8s, p99 = 3s , max= 5s
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Modelos
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### User
 
-## Laravel Sponsors
+Modelo base para os usuários, contendo atributos comuns a todos os tipos de usuário.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### CommonUser
 
-### Premium Partners
+Extende `User`, representando os usuários comuns.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### MerchantUser
 
-## Contributing
+Extende `User`, representando os lojistas.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Wallet
 
-## Code of Conduct
+Modelo para a carteira dos usuários, contendo o saldo.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Transaction
 
-## Security Vulnerabilities
+Modelo para as transações entre usuários.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Estrutura de Banco de Dados
 
-## License
+### Tabelas
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+#### users
+
+- `id`: Identificador único do usuário.
+- `name`: Nome completo do usuário.
+- `cpf`: CPF do usuário.
+- `email`: E-mail do usuário.
+- `password`: Senha do usuário.
+- `type`: Tipo de usuário (`common_user`, `merchant_user`).
+- `timestamps`: Data de criação e atualização do registro.
+
+#### wallets
+
+- `id`: Identificador único da carteira.
+- `user_id`: Chave estrangeira para a tabela `users`.
+- `balance`: Saldo da carteira.
+- `timestamps`: Data de criação e atualização do registro.
+
+#### transactions
+
+- `id`: Identificador único da transação.
+- `sender_id`: Chave estrangeira para a tabela `users`, indicando o usuário remetente.
+- `receiver_id`: Chave estrangeira para a tabela `users`, indicando o usuário destinatário.
+- `amount`: Valor da transação.
+- `timestamps`: Data de criação e atualização do registro.
+
+
+## Estrutura do Projeto
+
+```plaintext
+app/
+├── Domains/
+│   ├── Users/
+│   │   ├── Entities/
+│   │   │   ├── User.php
+│   │   │   ├── CommonUser.php
+│   │   │   └── MerchantUser.php
+│   │   ├── Services/
+│   │   │   ├── UserService.php
+│   │   │   └── AuthenticationService.php
+│   │   └── Repositories/
+│   │       └── UserRepository.php
+│   ├── Wallets/
+│   │   ├── Entities/
+│   │   │   └── Wallet.php
+│   │   ├── Services/
+│   │   │   └── WalletService.php
+│   │   └── Repositories/
+│   │       └── WalletRepository.php
+│   ├── Transactions/
+│   │   ├── Entities/
+│   │   │   └── Transaction.php
+│   │   ├── Services/
+│   │   │   └── TransferService.php
+│   │   └── Repositories/
+│   │       └── TransactionRepository.php
+│   ├── Notifications/
+│   │   ├── Entities/
+│   │   │   └── Notification.php
+│   │   ├── Services/
+│   │   │   └── NotificationService.php
+│   │   └── Repositories/
+│   │       └── NotificationRepository.php
+│   └── Audits/
+│       ├── Entities/
+│       │   └── AuditLog.php
+│       ├── Services/
+│       │   └── AuditService.php
+│       └── Repositories/
+│           └── AuditRepository.php
+├── Http/
+│   ├── Controllers/
+│   │   ├── UserController.php
+│   │   ├── WalletController.php
+│   │   └── TransactionController.php
+├── Providers/
+│   └── AppServiceProvider.php
+└── Services/
+    └── Contracts/
+        └── TransferServiceInterface.php
+```
+
+
+## Domínios
+
+### Domínio de Usuários (User Domain)
+
+Responsável por gerenciar informações e operações relacionadas aos usuários.
+
+#### Entidades
+
+- `User`: Entidade base para usuários.
+- `CommonUser`: Representa os usuários comuns.
+- `MerchantUser`: Representa os lojistas.
+
+#### Serviços
+
+- `UserService`: Gerenciamento de usuários.
+- `AuthenticationService`: Autenticação e autorização.
+
+### Domínio de Carteiras (Wallet Domain)
+
+Gerencia as carteiras dos usuários, incluindo saldo e operações financeiras.
+
+#### Entidades
+
+- `Wallet`: Representa a carteira de um usuário.
+
+#### Serviços
+
+- `WalletService`: Gerenciamento de saldo.
+
+### Domínio de Transações (Transaction Domain)
+
+Responsável pelas operações de transferência de dinheiro entre os usuários.
+
+#### Entidades
+
+- `Transaction`: Representa uma transação financeira.
+
+#### Serviços
+
+- `TransferService`: Realiza transferências de dinheiro.
+
+### Domínio de Notificações (Notification Domain)
+
+Lida com a comunicação e notificações para os usuários.
+
+#### Entidades
+
+- `Notification`: Representa uma notificação.
+
+#### Serviços
+
+- `NotificationService`: Gerenciamento de notificações.
+
+### Domínio de Auditoria (Audit Domain)
+
+Mantém o registro de todas as operações e alterações realizadas no sistema para fins de auditoria e segurança.
+
+#### Entidades
+
+- `AuditLog`: Representa um registro de auditoria.
+
+#### Serviços
+
+- `AuditService`: Gerenciamento de auditoria.
 
 ## Setup
   - Ajustar permissões da pasta storage
