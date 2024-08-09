@@ -10,13 +10,4 @@ class CommonUser extends User
         'password',
         'cpf',
     ];
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->type = 'common_user';
-        });
-    }
 }

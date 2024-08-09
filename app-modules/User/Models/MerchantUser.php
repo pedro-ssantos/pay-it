@@ -10,13 +10,4 @@ class MerchantUser extends User
         'password',
         'cnpj',
     ];
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->type = 'merchant_user';
-        });
-    }
 }

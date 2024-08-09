@@ -48,4 +48,17 @@ abstract class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if ($model instanceof CommonUser) {
+                $model->type = 'common_user';
+            } elseif ($model instanceof MerchantUser) {
+                $model->type = 'merchant_user';
+            }
+        });
+    }
 }
