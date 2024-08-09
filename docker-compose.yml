@@ -68,6 +68,8 @@ services:
       - db
     ports:
       - 8888:80
+    networks:
+      - app-network
 
 #Docker Networks
 networks:
