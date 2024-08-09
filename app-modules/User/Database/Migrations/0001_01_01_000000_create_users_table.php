@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('type', ['common_user', 'merchant_user']);
+            $table->string('cpf')->unique()->nullable();
+            $table->string('cnpj')->unique()->nullable(); 
             $table->rememberToken();
             $table->timestamps();
         });

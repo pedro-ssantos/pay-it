@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+namespace AppModules\User\Routes\V1;
 
-Route::get('/login', function () {
-    return response()->json(['status' => 'ok']);
-});
+use Illuminate\Support\Facades\Route;
+use AppModules\User\Http\Controllers\UserController;
+
+Route::post('/users', [UserController::class, 'store']);
