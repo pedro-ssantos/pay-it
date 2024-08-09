@@ -3,31 +3,42 @@
 namespace AppModules\User\Factories;
 
 use Illuminate\Support\Arr;
-use AppModules\User\Models\CommonUser;
-use AppModules\User\Models\MerchantUser;
+use AppModules\User\Database\Repositories\Interfaces\CommonUserRepositoryInterface;
+use AppModules\User\Database\Repositories\Interfaces\MerchantUserRepositoryInterface;
 
 class UserFactory
 {
-    public static function create(array $data)
+    protected $commonUserRepository;
+    protected $merchantUserRepository;
+
+    public function __construct(
+        CommonUserRepositoryInterface $commonUserRepository,
+        MerchantUserRepositoryInterface $merchantUserRepository
+    ) {
+        $this->commonUserRepository = $commonUserRepository;
+        $this->merchantUserRepository = $merchantUserRepository;
+    }
+
+    public function create(array $data)
     {
         if (Arr::has($data, 'cpf')) {
-            return self::createCommonUser($data);
+            return $this->createCommonUser($data);
         }
 
         if (Arr::has($data, 'cnpj')) {
-            return self::createMerchantUser($data);
+            return $this->createMerchantUser($data);
         }
 
         throw new \InvalidArgumentException('CPF or CNPJ is required.');
     }
 
-    protected static function createCommonUser(array $data)
+    protected function createCommonUser(array $data)
     {
-        return CommonUser::create($data);
+        return $this->commonUserRepository->create($data);
     }
 
-    protected static function createMerchantUser(array $data)
+    protected function createMerchantUser(array $data)
     {
-        return MerchantUser::create($data);
+        return $this->merchantUserRepository->create($data);
     }
 }

@@ -9,13 +9,15 @@ use AppModules\User\Http\Requests\StoreUserRequest;
 
 class UserController extends Controller
 {
+
+    public function __construct(protected UserFactory $userFactory) {}
+
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $user = UserFactory::create($request->validated());
 
         return response()->json([
             'message' => 'User created successfully',
-            'user' => $user,
+            'user' =>'user',
         ], 201);
     }
 }
