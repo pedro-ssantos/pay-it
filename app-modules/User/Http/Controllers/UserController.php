@@ -20,7 +20,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'User created successfully',
-            'user' => $user->only(['name', 'email', 'cpf']),
+            'user' => $user->only(['name', 'email', 'cpf','cnpj']),
         ], 201);
     }
 }
