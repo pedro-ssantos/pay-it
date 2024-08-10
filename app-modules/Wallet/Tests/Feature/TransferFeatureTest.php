@@ -2,30 +2,31 @@
 
 namespace AppModules\Wallet\Tests\Feature;
 
-use Tests\TestCase;
-use AppModules\Wallet\Models\Wallet;
-use AppModules\User\Models\CommonUser;
-use AppModules\User\Models\MerchantUser;
 use AppModules\Wallet\Tests\WalletTestCase;
 use AppModules\Wallet\Services\TransferService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use AppModules\Wallet\Services\TransferStrategyFactory;
+use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
 
 class TransferFeatureTest extends WalletTestCase
 {
     use RefreshDatabase;
 
     protected TransferService $sut;
+    protected $authorizationServiceMock;
 
     protected function setUp(): void
     {
         parent::setUp();
         $transferStrategyFactory =  new TransferStrategyFactory();
-        $this->sut = new TransferService($transferStrategyFactory);
+        $this->authorizationServiceMock = $this->mock(AuthorizationServiceInterface::class);
+        $this->sut = new TransferService($transferStrategyFactory, $this->authorizationServiceMock);
     }
 
     public function test_common_user_can_transfer_to_another_common_user()
     {
+        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
+
         $sender = $this->createCommonUser();
         $receiver = $this->createMerchantUser();
 
@@ -44,6 +45,8 @@ class TransferFeatureTest extends WalletTestCase
 
     public function test_common_user_can_transfer_to_merchant_user()
     {
+        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
+
         $sender = $this->createCommonUser();
         $receiver = $this->createMerchantUser();
 
@@ -62,6 +65,8 @@ class TransferFeatureTest extends WalletTestCase
 
     public function test_transfer_fails_if_insufficient_balance()
     {
+        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
+
         $sender = $this->createCommonUser();
         $receiver = $this->createMerchantUser();
 
@@ -81,6 +86,8 @@ class TransferFeatureTest extends WalletTestCase
 
     public function test_merchant_user_cannot_transfer_to_anyone()
     {
+        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
+
         $sender = $this->createMerchantUser();
         $receiver = $this->createCommonUser();
 
@@ -95,6 +102,8 @@ class TransferFeatureTest extends WalletTestCase
 
     public function test_it_allows_transfer_between_users()
     {
+        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
+
         $sender = $this->createCommonUser();
         $receiver = $this->createMerchantUser();
 
@@ -110,5 +119,21 @@ class TransferFeatureTest extends WalletTestCase
         $response->assertStatus(200);
         $this->assertEquals(80.00, $sender->wallet->fresh()->balance);
         $this->assertEquals(70.00, $receiver->wallet->fresh()->balance);
+    }
+
+    public function test_transfer_fails_if_unauthorized()
+    {
+        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(false);
+
+        $sender = $this->createCommonUser();
+        $receiver = $this->createMerchantUser();
+
+        $this->createWallet($sender->id, 200);
+        $this->createWallet($receiver->id, 100);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Unauthorized');
+
+        $this->sut->execute($sender, $receiver, 50);
     }
 }
