@@ -16,12 +16,14 @@ class TransferStrategyFactory
         if ($sender instanceof CommonUser && $receiver instanceof MerchantUser) {
             return new CommonToMerchantTransferStrategy(
                 app()->make('AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface'),
-                app()->make('AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface')
+                app()->make('AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface'),
+                app()->make('AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface')
             );
         } elseif ($sender instanceof CommonUser && $receiver instanceof CommonUser) {
             return new CommonToCommonTransferStrategy(
                 app()->make('AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface'),
                 app()->make('AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface'),
+                app()->make('AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface')
             );
         }
 
