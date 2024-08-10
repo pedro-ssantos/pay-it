@@ -12,6 +12,8 @@ abstract class User extends Authenticatable
 {
     use Notifiable;
 
+    protected $table = 'users';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -24,6 +26,7 @@ abstract class User extends Authenticatable
         'type',
         'cpf',
         'cnpj',
+        'type'
     ];
 
     /**
@@ -49,11 +52,11 @@ abstract class User extends Authenticatable
         ];
     }
 
-    public static function boot(): void
+    public static function booted(): void
     {
-        parent::boot();
+        parent::booted();
 
-        static::creating(function ($model) {
+        static::creating(function (Self $model) {
             if ($model instanceof CommonUser) {
                 $model->type = 'common_user';
             } elseif ($model instanceof MerchantUser) {

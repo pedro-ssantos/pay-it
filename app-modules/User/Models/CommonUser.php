@@ -10,4 +10,8 @@ class CommonUser extends User
         'password',
         'cpf',
     ];
+
+    protected $visible = [
+        'type'
+    ];
 }

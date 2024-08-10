@@ -16,7 +16,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8',
             'cpf' => 'nullable|required_without:cnpj|string|size:11|unique:users,cpf',
             'cnpj' => 'nullable|required_without:cpf|string|size:14|unique:users,cnpj',
         ];

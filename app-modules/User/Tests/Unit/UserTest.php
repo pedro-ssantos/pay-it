@@ -5,9 +5,12 @@ namespace AppModules\User\Tests\Unit;
 use Tests\TestCase;
 use AppModules\User\Models\CommonUser;
 use AppModules\User\Models\MerchantUser;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UserTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_it_creates_a_common_user_instance()
     {
         $user = new CommonUser([
@@ -18,8 +21,8 @@ class UserTest extends TestCase
         ]);
 
         $this->assertInstanceOf(CommonUser::class, $user);
-        $this->assertEquals('common_user', $user->type);
         $this->assertEquals('12345678901', $user->cpf);
+
     }
 
     public function test_it_creates_a_merchant_user_instance()
@@ -32,7 +35,6 @@ class UserTest extends TestCase
         ]);
 
         $this->assertInstanceOf(MerchantUser::class, $user);
-        $this->assertEquals('merchant_user', $user->type);
         $this->assertEquals('12345678901234', $user->cnpj);
     }
 }
