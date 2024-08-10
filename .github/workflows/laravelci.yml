@@ -34,4 +34,4 @@ jobs:
         DB_DATABASE: database/database.sqlite
       run: php artisan test
     - name: Run PHPStan
-      run: vendor/bin/phpstan analyse --memory-limit=1G
+      run: vendor/bin/phpstan analyse --memory-limit=1G app-modules
