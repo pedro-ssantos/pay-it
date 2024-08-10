@@ -5,6 +5,7 @@ namespace AppModules\Wallet\Providers;
 use Illuminate\Support\ServiceProvider;
 use AppModules\Wallet\Services\TransferService;
 use AppModules\Wallet\Services\BalanceValidator;
+use AppModules\Wallet\Services\TransferStrategyFactory;
 use AppModules\Wallet\Repositories\Eloquent\WalletRepository;
 use AppModules\Wallet\Services\Interfaces\TransferServiceInterface;
 use AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface;
@@ -21,7 +22,9 @@ class WalletServiceProvider extends ServiceProvider
     {
         $this->app->bind(WalletRepositoryInterface::class, WalletRepository::class);
         $this->app->bind(BalanceValidatorInterface::class, BalanceValidator::class);
-
+        $this->app->singleton(TransferService::class, function ($app) {
+            return new TransferService($app->make(TransferStrategyFactory::class));
+        });
     }
 
     /**

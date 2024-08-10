@@ -68,9 +68,11 @@ class TransferFeatureTest extends WalletTestCase
         $w1 = $this->createWallet($sender->id, 50);
         $w2 = $this->createWallet($receiver->id, 100);
 
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Insufficient balance');
+
         $result = $this->sut->execute($sender, $receiver, 100);
 
-        $this->assertFalse($result);
         $sender->refresh();
         $receiver->refresh();
         $this->assertEquals(50, $sender->wallet->balance);
@@ -89,5 +91,24 @@ class TransferFeatureTest extends WalletTestCase
         $this->expectExceptionMessage('No valid strategy found for this transfer');
 
         $this->sut->execute($sender, $receiver, 50);
+    }
+
+    public function test_it_allows_transfer_between_users()
+    {
+        $sender = $this->createCommonUser();
+        $receiver = $this->createMerchantUser();
+
+        $this->createWallet($sender->id, 100);
+        $this->createWallet($receiver->id, 50);
+
+        $response = $this->postJson('/api/v1/transfer', [
+            'sender_id' => $sender->id,
+            'receiver_id' => $receiver->id,
+            'amount' => 20.00,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals(80.00, $sender->wallet->fresh()->balance);
+        $this->assertEquals(70.00, $receiver->wallet->fresh()->balance);
     }
 }
