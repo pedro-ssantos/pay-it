@@ -1,15 +1,19 @@
 <?php
 
-namespace App\Models;
+namespace AppModules\User\Models;
+
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use Notifiable, HasApiTokens;
+
+    protected $table = 'users';
 
     /**
      * The attributes that are mass assignable.
@@ -20,6 +24,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'type',
+        'cpf',
+        'cnpj',
+        'type'
     ];
 
     /**
@@ -43,5 +51,18 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public static function booted(): void
+    {
+        parent::booted();
+
+        static::creating(function (Self $model) {
+            if ($model instanceof CommonUser) {
+                $model->type = 'common_user';
+            } elseif ($model instanceof MerchantUser) {
+                $model->type = 'merchant_user';
+            }
+        });
     }
 }
