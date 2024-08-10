@@ -26,7 +26,8 @@ class RetryableNotificationStrategy implements NotificationStrategyInterface
 
             $attempts++;
             // Backoff exponencial, por exemplo
-            sleep(pow(2, $attempts));
+            // sleep(pow(2, $attempts));
+            sleep(1);
         }
 
         return false;
