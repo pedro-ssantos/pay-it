@@ -68,9 +68,11 @@ class TransferFeatureTest extends WalletTestCase
         $w1 = $this->createWallet($sender->id, 50);
         $w2 = $this->createWallet($receiver->id, 100);
 
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Insufficient balance');
+
         $result = $this->sut->execute($sender, $receiver, 100);
 
-        $this->assertFalse($result);
         $sender->refresh();
         $receiver->refresh();
         $this->assertEquals(50, $sender->wallet->balance);
