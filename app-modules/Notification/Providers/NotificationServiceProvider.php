@@ -20,26 +20,22 @@ class NotificationServiceProvider extends ServiceProvider
     public function register()
     {
         // Register SmsNotificationStrategy in the service container
-        $this->app->singleton(SmsNotificationStrategy::class, function ($app) {
+        $this->app->bind(SmsNotificationStrategy::class, function ($app) {
             return new SmsNotificationStrategy($app->make(Client::class));
         });
 
         // Register EmailNotificationStrategy in the service container
-        $this->app->singleton(EmailNotificationStrategy::class, function ($app) {
+        $this->app->bind(EmailNotificationStrategy::class, function ($app) {
             return new EmailNotificationStrategy($app->make(Client::class));
         });
 
         // Register RetryableNotificationStrategy in the service container
-        $this->app->singleton(RetryableNotificationStrategy::class, function ($app) {
+        $this->app->bind(RetryableNotificationStrategy::class, function ($app) {
             return new RetryableNotificationStrategy($app->make(Client::class));
         });
         // Registrar NotificationStrategyFactory no service container
         $this->app->singleton(NotificationStrategyFactory::class, function ($app) {
-            return new NotificationStrategyFactory(
-                $app->make(SmsNotificationStrategy::class),
-                $app->make(EmailNotificationStrategy::class),
-                $app->make(RetryableNotificationStrategy::class)
-            );
+            return new NotificationStrategyFactory();
         });
     }
 }
