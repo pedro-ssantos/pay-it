@@ -1,4 +1,4 @@
-<?
+<?php
 
 namespace AppModules\Notification\Tests\Unit;
 

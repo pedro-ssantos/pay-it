@@ -1,4 +1,4 @@
-<?
+<?php
 
 namespace AppModules\Notification\Services\Interfaces;
 
