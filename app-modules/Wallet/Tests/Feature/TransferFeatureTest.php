@@ -127,7 +127,9 @@ class TransferFeatureTest extends WalletTestCase
         $this->createWallet($sender->id, 100);
         $this->createWallet($receiver->id, 50);
 
-        $response = $this->postJson('/api/v1/transfer', [
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $sender->token,
+        ])->postJson('/api/v1/transfer', [
             'sender_id' => $sender->id,
             'receiver_id' => $receiver->id,
             'amount' => 20.00,
