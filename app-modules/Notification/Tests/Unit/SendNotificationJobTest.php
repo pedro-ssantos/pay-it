@@ -44,9 +44,10 @@ class SendNotificationJobTest extends TestCase
         $job = new SendNotificationJob($sender, $receiver, $amount);
 
         $job->handle($mockedFactory);
+        $this->assertTrue(true);
     }
 
-    public function test_it_throws_exception_on_failure()
+    public function test_it_releases_job_on_failure()
     {
         $sender = $this->createUser();
         $receiver = $this->createUser();
@@ -63,10 +64,16 @@ class SendNotificationJobTest extends TestCase
             ->with($receiver->notification_type)
             ->andReturn($mockedStrategy);
 
-        $job = new SendNotificationJob($sender, $receiver, $amount);
+        // Mock do job
+        $job = Mockery::mock(SendNotificationJob::class, [$sender, $receiver, $amount])->makePartial();
+        $job->shouldAllowMockingProtectedMethods();
+        $job->shouldReceive('release')
+            ->once()
+            ->with(1800); // Verifica se o método release foi chamado com 1800 segundos (30 minutos)
 
-        $this->expectException(\Exception::class);
         $job->handle($mockedFactory);
+
+        $this->assertTrue(true);
     }
 
     public function test_job_is_dispatched()
@@ -97,6 +104,12 @@ class SendNotificationJobTest extends TestCase
 
             return $jobSender->is($sender) && $jobReceiver->is($receiver) && $jobAmount === $amount;
         });
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     protected function createUser($type = 'common')
