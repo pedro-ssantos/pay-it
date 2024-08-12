@@ -4,6 +4,7 @@ namespace AppModules\Wallet\Services;
 
 use Exception;
 use AppModules\User\Models\User;
+use AppModules\Notification\Jobs\SendNotificationJob;
 use AppModules\Wallet\Services\Interfaces\TransferServiceInterface;
 use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
 
@@ -24,6 +25,11 @@ class TransferService
 
         $this->strategy = $this->transferStrategyFactory->make($sender, $receiver);
 
-        return $this->strategy->transfer($sender, $receiver, $amount);
+        $this->strategy->transfer($sender, $receiver, $amount);
+
+        //Se a transferência falhar será lançada uma exceção e a notificação não será enviada
+        SendNotificationJob::dispatch($sender, $receiver, $amount);
+
+        return true;
     }
 }
