@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('password');
             $table->enum('type', ['common_user', 'merchant_user']);
             $table->string('cpf')->unique()->nullable();
-            $table->string('cnpj')->unique()->nullable(); 
+            $table->string('cnpj')->unique()->nullable();
+            $table->enum('notification_type', ['email', 'sms'])->default('email');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -2,10 +2,14 @@
 
 namespace AppModules\Wallet\Tests\Feature;
 
+use Mockery;
+use Illuminate\Support\Facades\Queue;
 use AppModules\Wallet\Tests\WalletTestCase;
 use AppModules\Wallet\Services\TransferService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use AppModules\Wallet\Services\TransferStrategyFactory;
+use AppModules\Notification\Services\Factories\NotificationStrategyFactory;
+use AppModules\Notification\Services\Interfaces\NotificationStrategyInterface;
 use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
 
 class TransferFeatureTest extends WalletTestCase
@@ -14,13 +18,26 @@ class TransferFeatureTest extends WalletTestCase
 
     protected TransferService $sut;
     protected $authorizationServiceMock;
+    protected $notificationStrategyFactoryMock;
+    protected $notificationStrategyMock;
 
     protected function setUp(): void
     {
         parent::setUp();
         $transferStrategyFactory =  new TransferStrategyFactory();
         $this->authorizationServiceMock = $this->mock(AuthorizationServiceInterface::class);
+        $this->notificationStrategyFactoryMock = Mockery::mock(NotificationStrategyFactory::class);
+        $this->notificationStrategyMock = Mockery::mock(NotificationStrategyInterface::class);
+
+        $this->notificationStrategyFactoryMock->shouldReceive('make')
+            ->andReturn($this->notificationStrategyMock);
+
+        $this->notificationStrategyMock->shouldReceive('send')
+            ->andReturn(true);
+
         $this->sut = new TransferService($transferStrategyFactory, $this->authorizationServiceMock);
+
+        Queue::fake();
     }
 
     public function test_common_user_can_transfer_to_another_common_user()
