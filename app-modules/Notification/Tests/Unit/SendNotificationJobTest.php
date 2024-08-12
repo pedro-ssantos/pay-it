@@ -64,12 +64,11 @@ class SendNotificationJobTest extends TestCase
             ->with($receiver->notification_type)
             ->andReturn($mockedStrategy);
 
-        // Mock do job
         $job = Mockery::mock(SendNotificationJob::class, [$sender, $receiver, $amount])->makePartial();
         $job->shouldAllowMockingProtectedMethods();
         $job->shouldReceive('release')
             ->once()
-            ->with(1800); // Verifica se o método release foi chamado com 1800 segundos (30 minutos)
+            ->with(1800);
 
         $job->handle($mockedFactory);
 
@@ -128,7 +127,7 @@ class SendNotificationJobTest extends TestCase
         $user->name = 'Test User';
         $user->email = $email;
         $user->password = bcrypt('password');
-        $user->notification_type = 'email'; // Adiciona o tipo de notificação
+        $user->notification_type = 'email';
         $user->save();
 
         return $user;
