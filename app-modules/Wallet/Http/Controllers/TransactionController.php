@@ -2,9 +2,9 @@
 
 namespace AppModules\Wallet\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use AppModules\Wallet\Services\TransferService;
+use AppModules\Wallet\Http\Requests\TransferRequest;
 use AppModules\User\Database\Repositories\Eloquent\UserRepository;
 
 class TransactionController extends Controller
@@ -14,7 +14,7 @@ class TransactionController extends Controller
         protected UserRepository $userRepository
     ) {}
 
-    public function transfer(Request $request)
+    public function transfer(TransferRequest $request)
     {
         $validated = $request->validate([
             'sender_id' => 'required|exists:users,id',
