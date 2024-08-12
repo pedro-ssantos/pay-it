@@ -14,6 +14,9 @@ class SendNotificationJob implements ShouldQueue
 {
     use Queueable;
 
+    public int $tries = 5;
+    public int $backoff = 1800;
+
     /**
      * Create a new job instance.
      */
@@ -32,7 +35,12 @@ class SendNotificationJob implements ShouldQueue
         $strategy = $factory->make($this->receiver->notification_type);
 
         if (!$strategy->send($this->receiver->email, $message)) {
-            throw new \Exception("Failed to send notification");
+            $this->release($this->backoff);
         }
+    }
+
+    public function retryUntil()
+    {
+        return now()->addHours(3); // Tempo máximo para tentativas (3 horas)
     }
 }

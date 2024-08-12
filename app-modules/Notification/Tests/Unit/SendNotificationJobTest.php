@@ -44,9 +44,10 @@ class SendNotificationJobTest extends TestCase
         $job = new SendNotificationJob($sender, $receiver, $amount);
 
         $job->handle($mockedFactory);
+        $this->assertTrue(true);
     }
 
-    public function test_it_throws_exception_on_failure()
+    public function test_it_releases_job_on_failure()
     {
         $sender = $this->createUser();
         $receiver = $this->createUser();
@@ -63,10 +64,15 @@ class SendNotificationJobTest extends TestCase
             ->with($receiver->notification_type)
             ->andReturn($mockedStrategy);
 
-        $job = new SendNotificationJob($sender, $receiver, $amount);
+        $job = Mockery::mock(SendNotificationJob::class, [$sender, $receiver, $amount])->makePartial();
+        $job->shouldAllowMockingProtectedMethods();
+        $job->shouldReceive('release')
+            ->once()
+            ->with(1800);
 
-        $this->expectException(\Exception::class);
         $job->handle($mockedFactory);
+
+        $this->assertTrue(true);
     }
 
     public function test_job_is_dispatched()
@@ -99,6 +105,12 @@ class SendNotificationJobTest extends TestCase
         });
     }
 
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
+    }
+
     protected function createUser($type = 'common')
     {
         self::$emailCounter++;
@@ -115,7 +127,7 @@ class SendNotificationJobTest extends TestCase
         $user->name = 'Test User';
         $user->email = $email;
         $user->password = bcrypt('password');
-        $user->notification_type = 'email'; // Adiciona o tipo de notificação
+        $user->notification_type = 'email';
         $user->save();
 
         return $user;
