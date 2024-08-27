@@ -153,4 +153,18 @@ class TransferFeatureTest extends WalletTestCase
 
         $this->sut->execute($sender, $receiver, 50);
     }
+
+    public function test_transfer_fails_with_same_sender_and_receiver()
+    {
+        $user = User::factory()->create(['balance' => 100]);
+
+        $response = $this->postJson('/api/transfer', [
+            'sender_id' => $user->id,
+            'receiver_id' => $user->id,
+            'amount' => 50,
+        ]);
+
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['receiver_id']);
+    }
 }
