@@ -5,32 +5,30 @@ namespace AppModules\Wallet\Http\Controllers;
 use App\Http\Controllers\Controller;
 use AppModules\Wallet\Services\TransferService;
 use AppModules\Wallet\Http\Requests\TransferRequest;
-use AppModules\User\Database\Repositories\Eloquent\UserRepository;
+use AppModules\Wallet\Exceptions\UnauthorizedTransferException;
+use AppModules\Wallet\Exceptions\InsufficientFundsException;
 
 class TransactionController extends Controller
 {
     public function __construct(
         protected TransferService $transferService,
-        protected UserRepository $userRepository
     ) {}
 
     public function transfer(TransferRequest $request)
     {
-        $validated = $request->validate([
-            'sender_id' => 'required|exists:users,id',
-            'receiver_id' => 'required|exists:users,id',
-            'amount' => 'required|numeric|min:0.01',
-        ]);
-
         try {
             $this->transferService->execute(
-                $this->userRepository->findById($validated['sender_id']),
-                $this->userRepository->findById($validated['receiver_id']),
-                $validated['amount']
+                $request->sender_id,
+                $$request->receiver_id,
+                $$request->amount
             );
             return response()->json(['message' => 'Transferência realizada com sucesso.'], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+        } catch (InsufficientFundsException $e) {
+            return response()->json(['message' => 'Saldo insuficiente.'], 400);
+        } catch (UnauthorizedTransferException $e) {
+            return response()->json(['message' => 'Transferência não autorizada.'], 403);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Ocorreu um erro ao processar a transferência.'], 500);
         }
     }
 }
