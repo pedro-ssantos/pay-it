@@ -132,29 +132,6 @@ class TransferFeatureTest extends WalletTestCase
         $this->sut->execute($sender->id, $receiver->id, 50);
     }
 
-    public function test_it_allows_transfer_between_users()
-    {
-        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
-
-        $sender = $this->createCommonUser();
-        $this->actingAs($sender);
-
-        $receiver = $this->createMerchantUser();
-
-        $this->createWallet($sender->id, 100);
-        $this->createWallet($receiver->id, 50);
-
-        $response = $this->postJson('/api/v1/transfer', [
-            'sender_id' => $sender->id,
-            'receiver_id' => $receiver->id,
-            'amount' => 20.00,
-        ]);
-
-        $response->assertStatus(200);
-        $this->assertEquals(80.00, $sender->wallet->fresh()->balance);
-        $this->assertEquals(70.00, $receiver->wallet->fresh()->balance);
-    }
-
     public function test_transfer_fails_if_unauthorized()
     {
         $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(false);
@@ -173,19 +150,50 @@ class TransferFeatureTest extends WalletTestCase
         $this->sut->execute($sender->id, $receiver->id, 50);
     }
 
+    public function test_it_allows_transfer_between_users()
+    {
+        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
+
+        $sender = $this->createCommonUser();
+        $token = $sender->createToken('auth_token', ['money-transfer'])->plainTextToken;
+
+        $receiver = $this->createMerchantUser();
+
+        $this->createWallet($sender->id, 100);
+        $this->createWallet($receiver->id, 50);
+
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->postJson('/api/v1/transfer', [
+            'sender_id' => $sender->id,
+            'receiver_id' => $receiver->id,
+            'amount' => 20.00,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals(80.00, $sender->wallet->fresh()->balance);
+        $this->assertEquals(70.00, $receiver->wallet->fresh()->balance);
+    }
+
     public function test_transfer_fails_with_same_sender_and_receiver()
     {
         $user = $this->createCommonUser();
-        $this->actingAs($user);
+        $token = $user->createToken('auth_token', ['money-transfer'])->plainTextToken;
+
         $this->createWallet($user->id, 200);
 
-        $response = $this->postJson('/api/v1/transfer', [
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->postJson('/api/v1/transfer', [
             'sender_id' => $user->id,
             'receiver_id' => $user->id,
             'amount' => 50,
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['receiver_id']);
+            ->assertJsonValidationErrors(['receiver_id'])
+            ->assertJsonFragment([
+                'receiver_id' => ['O recebedor não pode ser o mesmo que o remetente.']
+            ]);
     }
 }
