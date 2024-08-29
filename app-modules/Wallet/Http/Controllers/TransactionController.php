@@ -19,8 +19,8 @@ class TransactionController extends Controller
         try {
             $this->transferService->execute(
                 $request->sender_id,
-                $$request->receiver_id,
-                $$request->amount
+                $request->receiver_id,
+                $request->amount
             );
             return response()->json(['message' => 'Transferência realizada com sucesso.'], 200);
         } catch (InsufficientFundsException $e) {
