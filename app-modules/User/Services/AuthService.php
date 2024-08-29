@@ -22,8 +22,12 @@ class AuthService
             return ['status' => 'error', 'message' => 'Unauthorized'];
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        if ($user->type === 'common_user') {
+            $token = $user->createToken('auth_token', ['money-transfer'])->plainTextToken;
+        } else {
+            $token = $user->createToken('auth_token')->plainTextToken;
+        }
 
-        return ['status' => 'success', 'token' => $token];
+        return ['status' => 'success', 'token' => $token, 'type' => $user->type];
     }
 }
