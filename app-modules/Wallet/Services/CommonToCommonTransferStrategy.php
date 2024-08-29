@@ -2,12 +2,11 @@
 
 namespace AppModules\Wallet\Services;
 
-use Exception;
-
 use AppModules\User\Models\User;
 use Illuminate\Support\Facades\DB;
 use AppModules\Wallet\Models\Wallet;
 use AppModules\Wallet\Models\Transaction;
+use AppModules\Wallet\Exceptions\InsufficientFundsException;
 use AppModules\Wallet\Services\Interfaces\TransferServiceInterface;
 use AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface;
 use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
@@ -28,7 +27,7 @@ class CommonToCommonTransferStrategy implements TransferServiceInterface
             $receiverWallet = Wallet::where('user_id', $receiver->id)->lockForUpdate()->first();
 
             if (!$this->balanceValidator->validate($sender->id, $amount)) {
-                throw new Exception('Insufficient balance');
+                throw new InsufficientFundsException('Insufficient balance');
             }
 
             $this->walletRepository->decreaseBalance($sender->id, $amount);

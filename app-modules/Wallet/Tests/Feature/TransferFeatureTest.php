@@ -9,6 +9,7 @@ use AppModules\Wallet\Services\TransferService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use AppModules\Wallet\Services\TransferStrategyFactory;
 use AppModules\Notification\Services\Factories\NotificationStrategyFactory;
+use AppModules\User\Database\Repositories\Interfaces\UserRepositoryInterface;
 use AppModules\Notification\Services\Interfaces\NotificationStrategyInterface;
 use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
 
@@ -20,6 +21,7 @@ class TransferFeatureTest extends WalletTestCase
     protected $authorizationServiceMock;
     protected $notificationStrategyFactoryMock;
     protected $notificationStrategyMock;
+    protected $userReposiotry;
 
     protected function setUp(): void
     {
@@ -28,6 +30,7 @@ class TransferFeatureTest extends WalletTestCase
         $this->authorizationServiceMock = $this->mock(AuthorizationServiceInterface::class);
         $this->notificationStrategyFactoryMock = Mockery::mock(NotificationStrategyFactory::class);
         $this->notificationStrategyMock = Mockery::mock(NotificationStrategyInterface::class);
+        $this->userReposiotry = $this->app->make(UserRepositoryInterface::class);
 
         $this->notificationStrategyFactoryMock->shouldReceive('make')
             ->andReturn($this->notificationStrategyMock);
@@ -35,7 +38,11 @@ class TransferFeatureTest extends WalletTestCase
         $this->notificationStrategyMock->shouldReceive('send')
             ->andReturn(true);
 
-        $this->sut = new TransferService($transferStrategyFactory, $this->authorizationServiceMock);
+        $this->sut = new TransferService(
+            $transferStrategyFactory,
+            $this->authorizationServiceMock,
+            $this->userReposiotry
+        );
 
         Queue::fake();
     }
@@ -45,12 +52,14 @@ class TransferFeatureTest extends WalletTestCase
         $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
 
         $sender = $this->createCommonUser();
+        $this->actingAs($sender);
+
         $receiver = $this->createMerchantUser();
 
         $this->createWallet($sender->id, 200);
         $this->createWallet($receiver->id, 100);
 
-        $result = $this->sut->execute($sender, $receiver, 50);
+        $result = $this->sut->execute($sender->id, $receiver->id, 50);
 
         $this->assertTrue($result);
 
@@ -65,12 +74,14 @@ class TransferFeatureTest extends WalletTestCase
         $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
 
         $sender = $this->createCommonUser();
+        $this->actingAs($sender);
+
         $receiver = $this->createMerchantUser();
 
         $this->createWallet($sender->id, 300);
         $this->createWallet($receiver->id, 200);
 
-        $result = $this->sut->execute($sender, $receiver, 100);
+        $result = $this->sut->execute($sender->id, $receiver->id, 100);
 
         $this->assertTrue($result);
 
@@ -85,6 +96,8 @@ class TransferFeatureTest extends WalletTestCase
         $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
 
         $sender = $this->createCommonUser();
+        $this->actingAs($sender);
+
         $receiver = $this->createMerchantUser();
 
         $w1 = $this->createWallet($sender->id, 50);
@@ -93,7 +106,7 @@ class TransferFeatureTest extends WalletTestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Insufficient balance');
 
-        $result = $this->sut->execute($sender, $receiver, 100);
+        $result = $this->sut->execute($sender->id, $receiver->id, 100);
 
         $sender->refresh();
         $receiver->refresh();
@@ -106,6 +119,8 @@ class TransferFeatureTest extends WalletTestCase
         $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
 
         $sender = $this->createMerchantUser();
+        $this->actingAs($sender);
+
         $receiver = $this->createCommonUser();
 
         $this->createWallet($sender->id, 200);
@@ -114,7 +129,25 @@ class TransferFeatureTest extends WalletTestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('No valid strategy found for this transfer');
 
-        $this->sut->execute($sender, $receiver, 50);
+        $this->sut->execute($sender->id, $receiver->id, 50);
+    }
+
+    public function test_transfer_fails_if_unauthorized()
+    {
+        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(false);
+
+        $sender = $this->createCommonUser();
+        $this->actingAs($sender);
+
+        $receiver = $this->createMerchantUser();
+
+        $this->createWallet($sender->id, 200);
+        $this->createWallet($receiver->id, 100);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Unauthorized');
+
+        $this->sut->execute($sender->id, $receiver->id, 50);
     }
 
     public function test_it_allows_transfer_between_users()
@@ -122,13 +155,15 @@ class TransferFeatureTest extends WalletTestCase
         $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(true);
 
         $sender = $this->createCommonUser();
+        $token = $sender->createToken('auth_token', ['money-transfer'])->plainTextToken;
+
         $receiver = $this->createMerchantUser();
 
         $this->createWallet($sender->id, 100);
         $this->createWallet($receiver->id, 50);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $sender->token,
+            'Authorization' => 'Bearer ' . $token,
         ])->postJson('/api/v1/transfer', [
             'sender_id' => $sender->id,
             'receiver_id' => $receiver->id,
@@ -140,19 +175,25 @@ class TransferFeatureTest extends WalletTestCase
         $this->assertEquals(70.00, $receiver->wallet->fresh()->balance);
     }
 
-    public function test_transfer_fails_if_unauthorized()
+    public function test_transfer_fails_with_same_sender_and_receiver()
     {
-        $this->authorizationServiceMock->shouldReceive('authorize')->andReturn(false);
+        $user = $this->createCommonUser();
+        $token = $user->createToken('auth_token', ['money-transfer'])->plainTextToken;
 
-        $sender = $this->createCommonUser();
-        $receiver = $this->createMerchantUser();
+        $this->createWallet($user->id, 200);
 
-        $this->createWallet($sender->id, 200);
-        $this->createWallet($receiver->id, 100);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->postJson('/api/v1/transfer', [
+            'sender_id' => $user->id,
+            'receiver_id' => $user->id,
+            'amount' => 50,
+        ]);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Unauthorized');
-
-        $this->sut->execute($sender, $receiver, 50);
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['receiver_id'])
+            ->assertJsonFragment([
+                'receiver_id' => ['O recebedor não pode ser o mesmo que o remetente.']
+            ]);
     }
 }

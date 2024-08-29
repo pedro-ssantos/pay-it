@@ -2,9 +2,11 @@
 
 namespace AppModules\Wallet\Services;
 
-use Exception;
 use AppModules\User\Models\User;
+use Illuminate\Support\Facades\Auth;
 use AppModules\Notification\Jobs\SendNotificationJob;
+use AppModules\Wallet\Exceptions\UnauthorizedTransferException;
+use AppModules\User\Database\Repositories\Eloquent\UserRepository;
 use AppModules\Wallet\Services\Interfaces\TransferServiceInterface;
 use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
 
@@ -15,13 +17,21 @@ class TransferService
     public function __construct(
         protected TransferStrategyFactory $transferStrategyFactory,
         protected AuthorizationServiceInterface $authorizationService,
+        protected UserRepository $userRepository
     ) {}
 
-    public function execute(User $sender, User $receiver, float $amount): bool
+    public function execute(int $idSender, int $idReceiver, float $amount): bool
     {
         if (!$this->authorizationService->authorize()) {
-            throw new Exception('Unauthorized');
+            throw new UnauthorizedTransferException();
         }
+        // Remetente não pode ser diferente do usuário autenticado, pois só pode transferir seu próprio dinheiro
+        if (Auth::id() !== $idSender) {
+            throw new UnauthorizedTransferException();
+        }
+
+        $sender = $this->userRepository->findById($idSender);
+        $receiver = $this->userRepository->findById($idReceiver);
 
         $this->strategy = $this->transferStrategyFactory->make($sender, $receiver);
 
