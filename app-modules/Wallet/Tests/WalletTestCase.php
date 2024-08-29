@@ -32,6 +32,8 @@ class WalletTestCase extends TestCase
         $user->password = bcrypt('password');
         $user->save();
 
+        $user->token = $user->createToken('API Token')->plainTextToken;
+
         return $user;
     }
 
