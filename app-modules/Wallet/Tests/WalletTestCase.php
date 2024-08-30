@@ -7,9 +7,12 @@ use AppModules\User\Models\User;
 use AppModules\Wallet\Models\Wallet;
 use AppModules\User\Models\CommonUser;
 use AppModules\User\Models\MerchantUser;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class WalletTestCase extends TestCase
 {
+    use RefreshDatabase;
+
     private static $emailCounter = 0;
     private static $cpfCounter = 10000000000;
     private static $cnpjCounter = 10000000000000;
