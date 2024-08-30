@@ -7,6 +7,7 @@ use Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use AppModules\Wallet\Models\Wallet;
 use AppModules\Transaction\Services\DepositService;
+use AppModules\Wallet\Exceptions\WalletNotFoundException;
 use AppModules\Wallet\Services\Interfaces\WalletServiceInterface;
 use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
 
@@ -21,11 +22,9 @@ class DepositServiceTest extends TestCase
     {
         parent::setUp();
 
-        // Mocking interfaces
         $this->walletRepository = Mockery::mock(WalletRepositoryInterface::class);
         $this->walletService = Mockery::mock(WalletServiceInterface::class);
 
-        // Service instance
         $this->depositService = new DepositService(
             $this->walletRepository,
             $this->walletService
@@ -60,6 +59,21 @@ class DepositServiceTest extends TestCase
         // No explicit assertion needed as Mockery will automatically
         // assert the method calls we defined in `shouldReceive`.
         $this->assertTrue(true); // Just to ensure PHPUnit doesn't warn about no assertions.
+    }
+
+    public function test_it_fails_when_wallet_not_found()
+    {
+        $this->walletRepository
+            ->shouldReceive('findByUserIdAndLock')
+            ->with(1)
+            ->andThrow(WalletNotFoundException::class);
+
+        $this->walletService
+            ->shouldNotReceive('increaseBalance');
+
+        $this->expectException(WalletNotFoundException::class);
+
+        $this->depositService->execute(1, 50.00);
     }
 
     protected function tearDown(): void
