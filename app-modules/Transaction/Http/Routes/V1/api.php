@@ -6,3 +6,4 @@ use Illuminate\Support\Facades\Route;
 use AppModules\Transaction\Http\Controllers\TransactionController;
 
 Route::post('/transfer', [TransactionController::class, 'transfer'])->middleware(['auth:sanctum', 'ability:money-transfer']);
+Route::post('/deposit', [TransactionController::class, 'deposit'])->middleware(['auth:sanctum', 'ability:money-deposit']);
