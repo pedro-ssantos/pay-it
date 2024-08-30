@@ -13,6 +13,8 @@ use AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface;
 use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
 use AppModules\User\Database\Repositories\Interfaces\UserRepositoryInterface;
 use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
+use AppModules\Wallet\Services\Interfaces\WalletServiceInterface;
+use AppModules\Wallet\Services\WalletService;
 
 class WalletServiceProvider extends ServiceProvider
 {
@@ -25,7 +27,7 @@ class WalletServiceProvider extends ServiceProvider
     {
         $this->app->bind(WalletRepositoryInterface::class, WalletRepository::class);
         $this->app->bind(BalanceValidatorInterface::class, BalanceValidator::class);
-        
+        $this->app->bind(WalletServiceInterface::class, WalletService::class);
     }
 
     /**
@@ -36,7 +38,7 @@ class WalletServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
-        $this->app->bind(TransferService::class, function ($app) {
+        $this->app->bind(TransferServiceInterface::class, function ($app) {
             return new TransferService(
                 $app->make(TransferStrategyFactory::class),
                 $app->make(AuthorizationServiceInterface::class),
