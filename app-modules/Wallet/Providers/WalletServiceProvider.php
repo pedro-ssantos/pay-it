@@ -38,12 +38,5 @@ class WalletServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
-        $this->app->bind(TransferServiceInterface::class, function ($app) {
-            return new TransferService(
-                $app->make(TransferStrategyFactory::class),
-                $app->make(AuthorizationServiceInterface::class),
-                $app->make(UserRepositoryInterface::class)
-            );
-        });
     }
 }

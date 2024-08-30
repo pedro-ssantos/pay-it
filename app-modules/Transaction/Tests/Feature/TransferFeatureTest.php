@@ -1,14 +1,14 @@
 <?php
 
-namespace AppModules\Wallet\Tests\Feature;
+namespace AppModules\Transaction\Test\Feature;
 
 use Mockery;
 use Illuminate\Support\Facades\Queue;
 use AppModules\Wallet\Tests\WalletTestCase;
-use AppModules\Wallet\Services\TransferService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use AppModules\Wallet\Services\TransferStrategyFactory;
+use AppModules\Transaction\Services\TransferService;
 use AppModules\Notification\Services\Factories\NotificationStrategyFactory;
+use AppModules\Transaction\Services\TrasnferStrategy\TransferStrategyFactory;
 use AppModules\User\Database\Repositories\Interfaces\UserRepositoryInterface;
 use AppModules\Notification\Services\Interfaces\NotificationStrategyInterface;
 use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
@@ -127,7 +127,7 @@ class TransferFeatureTest extends WalletTestCase
         $this->createWallet($receiver->id, 100);
 
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('No valid strategy found for this transfer');
+        $this->expectExceptionMessage('Invalid transfer strategy.');
 
         $this->sut->execute($sender->id, $receiver->id, 50);
     }

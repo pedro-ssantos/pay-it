@@ -6,4 +6,5 @@ return [
     AppModules\Wallet\Providers\WalletServiceProvider::class,
     AppModules\Authorization\Providers\AuthorizationServiceProvider::class,
     AppModules\Notification\Providers\NotificationServiceProvider::class,
+    AppModules\Transaction\Providers\TransactionServiceProvider::class,
 ];

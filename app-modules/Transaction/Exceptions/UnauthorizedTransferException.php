@@ -1,6 +1,7 @@
 <?php
 
-namespace AppModules\Wallet\Exceptions;
+namespace AppModules\Transaction\Exceptions;
+
 
 class UnauthorizedTransferException extends \Exception
 {
