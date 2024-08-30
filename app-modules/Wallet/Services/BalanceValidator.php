@@ -2,17 +2,23 @@
 
 namespace AppModules\Wallet\Services;
 
-use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
+use AppModules\Wallet\Models\Wallet;
+use AppModules\Wallet\Exceptions\InsufficientFundsException;
 use AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface;
+use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
 
 class BalanceValidator implements BalanceValidatorInterface
 {
-
-    public function __construct(protected WalletRepositoryInterface $walletRepository) {}
-
-    public function validate(int $userId, float $amount): bool
+    /**
+     * Validates if the wallet has sufficient balance.
+     *
+     * @param Wallet $wallet
+     * @param float $amount
+     * @return bool
+     * @throws InsufficientFundsException if the balance is insufficient
+     */
+    public function validate(Wallet $wallet, float $amount): bool
     {
-        $wallet = $this->walletRepository->findByUserId($userId);
-        return $wallet && $wallet->balance >= $amount;
+        return $wallet->balance >= $amount ? true : throw new InsufficientFundsException('Insufficient balance');;
     }
 }
