@@ -1,18 +1,18 @@
 <?php
 
-namespace AppModules\Wallet\Services;
+namespace AppModules\Transaction\Services;
 
-use AppModules\User\Models\User;
 use Illuminate\Support\Facades\Auth;
 use AppModules\Notification\Jobs\SendNotificationJob;
-use AppModules\Wallet\Exceptions\UnauthorizedTransferException;
 use AppModules\User\Database\Repositories\Eloquent\UserRepository;
-use AppModules\Wallet\Services\Interfaces\TransferServiceInterface;
+use AppModules\Transaction\Exceptions\UnauthorizedTransferException;
+use AppModules\Transaction\Services\TrasnferStrategy\TransferStrategyFactory;
 use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
+use AppModules\Transaction\Services\TrasnferStrategy\Interface\TransferStrategyInterface;
 
 class TransferService
 {
-    protected TransferServiceInterface $strategy;
+    protected TransferStrategyInterface $strategy;
 
     public function __construct(
         protected TransferStrategyFactory $transferStrategyFactory,

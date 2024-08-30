@@ -1,21 +1,20 @@
 <?php
 
-namespace AppModules\Wallet\Services;
+namespace AppModules\Transaction\Services\TrasnferStrategy;
 
 use AppModules\User\Models\User;
 use Illuminate\Support\Facades\DB;
-use AppModules\Wallet\Models\Wallet;
-use AppModules\Wallet\Models\Transaction;
-use AppModules\Wallet\Exceptions\InsufficientFundsException;
-use AppModules\Wallet\Services\Interfaces\TransferServiceInterface;
+use AppModules\Transaction\Models\Transaction;
+use AppModules\Wallet\Services\Interfaces\WalletServiceInterface;
 use AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface;
 use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
+use AppModules\Transaction\Services\TrasnferStrategy\Interface\TransferStrategyInterface;
 
-class CommonToCommonTransferStrategy implements TransferServiceInterface
+class CommonToCommonTransferStrategy implements TransferStrategyInterface
 {
 
     public function __construct(
-        protected WalletService $walletService,
+        protected WalletServiceInterface $walletService,
         protected WalletRepositoryInterface $walletRepository,
         protected BalanceValidatorInterface $balanceValidator
     ) {}

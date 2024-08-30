@@ -1,6 +1,6 @@
 <?php
 
-namespace AppModules\Wallet\Models;
+namespace AppModules\Transaction\Models;
 
 use AppModules\User\Models\User;
 use Illuminate\Database\Eloquent\Model;

@@ -1,12 +1,13 @@
 <?php
 
-namespace AppModules\Wallet\Http\Controllers;
+namespace AppModules\Transaction\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use AppModules\Wallet\Services\TransferService;
-use AppModules\Wallet\Http\Requests\TransferRequest;
-use AppModules\Wallet\Exceptions\UnauthorizedTransferException;
-use AppModules\Wallet\Exceptions\InsufficientFundsException;
+use AppModules\Transaction\Services\TransferService;
+use AppModules\Transaction\Http\Requests\TransferRequest;
+use AppModules\Transaction\Exceptions\InsufficientFundsException;
+use AppModules\Transaction\Exceptions\UnauthorizedTransferException;
+
 
 class TransactionController extends Controller
 {
