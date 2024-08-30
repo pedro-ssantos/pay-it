@@ -3,8 +3,8 @@
 namespace AppModules\Transaction\Services;
 
 use Illuminate\Support\Facades\DB;
-use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
 use AppModules\Wallet\Services\Interfaces\WalletServiceInterface;
+use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
 
 class DepositService
 {
@@ -18,6 +18,7 @@ class DepositService
     {
         DB::transaction(function () use ($receiverId, $amount) {
             $receiverWallet = $this->walletRepository->findByUserIdAndLock($receiverId);
+
             $this->walletService->increaseBalance($receiverWallet, $amount);
         });
     }
