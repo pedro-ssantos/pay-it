@@ -12,6 +12,7 @@ use AppModules\Transaction\Services\TrasnferStrategy\Interface\TransferStrategyI
 
 class CommonToCommonTransferStrategy implements TransferStrategyInterface
 {
+    protected const TRANSACTION_TIMEOUT = 5;
 
     public function __construct(
         protected WalletServiceInterface $walletService,
@@ -32,7 +33,7 @@ class CommonToCommonTransferStrategy implements TransferStrategyInterface
             $this->createTransaction($sender, $receiver, $amount);
 
             return true;
-        });
+        }, self::TRANSACTION_TIMEOUT);
     }
 
     /**
