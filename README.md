@@ -5,6 +5,8 @@ O Pay-it é uma plataforma de pagamentos que permite depósitos e transferência
 ## Índice
 
 - [Recursos](#recursos)
+- [Requisitos Funcionais](#requisitos-funcionais)
+- [Requisitos Não Funcionais](#requisitos-nao-funcionais)
 - [SLA](#sla)
 - [Modelos](#modelos)
 - [Estrutura de Banco de Dados](#estrutura-de-banco-de-dados)
@@ -16,6 +18,7 @@ O Pay-it é uma plataforma de pagamentos que permite depósitos e transferência
   - [Domínio de Notificações (Notification Domain)](#domínio-de-notificações-notification-domain)
   - [Domínio de Auditoria (Audit Domain)](#domínio-de-auditoria-audit-domain)
 - [Setup](#setup)
+- [Possíveis Melhorias Futuras](#possiveis-melhorias-futuras)
 
 ## Recursos
 
@@ -25,6 +28,46 @@ O Pay-it é uma plataforma de pagamentos que permite depósitos e transferência
 - Validação de saldo antes da transferência.
 - Notificações de transações.
 - Auditoria de operações.
+
+## Requisitos Funcionais
+
+### 1. Transferências
+- Implementar e testar todos os cenários possíveis para transferências entre usuários.
+- Garantir que as transferências sejam devidamente registradas e que as notificações sejam enviadas após a conclusão.
+
+### 2. Autorização
+- Certificar-se de que o serviço de autorização externo está integrado e funcionando corretamente para cada transferência.
+- Implementar mecanismos de fallback ou retry caso o serviço de autorização falhe.
+
+### 3. Notificações
+- Implementar o envio de notificações via diferentes canais (e-mail, SMS) após transferências e depósitos.
+- Configurar estratégias de retry para casos onde o serviço de notificação esteja indisponível.
+
+## Requisitos Não Funcionais
+
+### 1. Performance e Escalabilidade
+- Realizar testes de carga para garantir que a aplicação suporte altos volumes de transações financeiras simultâneas.
+- Revisar a arquitetura para melhorar a escalabilidade, como a separação de domínios em microserviços no futuro.
+
+### 2. Segurança
+- Verificar e proteger contra ataques CSRF e XSS.
+- Implementar validação e sanitização de entradas para evitar injeções SQL e outras vulnerabilidades.
+
+### 3. Concorrência e Integridade dos Dados
+- Confirmar que o uso de locks (Pessimistic Locking) previne condições de corrida e garante a integridade dos dados em cenários de alta concorrência.
+- Implementar handling de deadlocks.
+
+### 4. Observabilidade e Monitoramento
+- Configurar monitoramento para transações financeiras, incluindo logs detalhados, métricas de performance e alertas para falhas.
+- Integrar com uma solução de observabilidade como o Datadog para melhor visibilidade do sistema em produção.
+
+### 5. Testes Automatizados
+- Garantir uma cobertura de testes alta, incluindo testes unitários, de integração e de carga.
+- Configurar um pipeline de CI/CD robusto para facilitar a entrega contínua com segurança.
+
+### 6. Documentação
+- Completar e revisar a documentação da API, incluindo detalhes sobre as rotas, parâmetros, respostas e possíveis erros.
+- Documentar a arquitetura da aplicação, padrões de design usados, e instruções para desenvolvedores futuros.
 
 ## SLA
 
@@ -209,3 +252,8 @@ Mantém o registro de todas as operações e alterações realizadas no sistema 
 ## Setup
   - Ajustar permissões da pasta storage
   - Criar database 'payit', usuário e ajustar .env com as credenciais.
+
+## Possíveis Melhorias Futuras
+- Considerar a migração para um banco de dados mais adequado para operações financeiras, caso a concorrência seja um problema crescente.
+- Avaliar a possibilidade de usar Event Sourcing para garantir consistência e auditabilidade em operações financeiras.
+- Explorar o uso de Command Pattern e outros padrões de design para encapsular melhor as operações de negócios.
