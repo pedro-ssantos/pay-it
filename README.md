@@ -16,7 +16,7 @@ O Pay-it é uma plataforma de pagamentos que permite depósitos e transferência
   - [Domínio de Carteiras (Wallet Domain)](#domínio-de-carteiras-wallet-domain)
   - [Domínio de Transações (Transaction Domain)](#domínio-de-transações-transaction-domain)
   - [Domínio de Notificações (Notification Domain)](#domínio-de-notificações-notification-domain)
-  - [Domínio de Auditoria (Audit Domain)](#domínio-de-auditoria-audit-domain)
+  - [Domínio de Autorização](#domínio-de-autorização)
 - [Setup](#setup)
 - [Possíveis Melhorias Futuras](#possiveis-melhorias-futuras)
 
@@ -237,21 +237,14 @@ Lida com a comunicação e notificações para os usuários.
 
 - `NotificationService`: Gerenciamento de notificações.
 
-### Domínio de Auditoria (Audit Domain)
+### Domínio de Autorização
 
-Mantém o registro de todas as operações e alterações realizadas no sistema para fins de auditoria e segurança.
-
-#### Entidades
-
-- `AuditLog`: Representa um registro de auditoria.
-
-#### Serviços
-
-- `AuditService`: Gerenciamento de auditoria.
+Lida com os serviços de autorização de transação.
 
 ## Setup
   - Ajustar permissões da pasta storage
   - Criar database 'payit', usuário e ajustar .env com as credenciais.
+  - Docker compose up
 
 ## Possíveis Melhorias Futuras
 - Considerar a migração para um banco de dados mais adequado para operações financeiras, caso a concorrência seja um problema crescente.
