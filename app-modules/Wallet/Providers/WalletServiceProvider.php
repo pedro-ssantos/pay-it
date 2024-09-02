@@ -4,17 +4,19 @@ namespace AppModules\Wallet\Providers;
 
 use AppModules\User\Models\User;
 use Illuminate\Support\ServiceProvider;
+use AppModules\Wallet\Services\WalletService;
 use AppModules\Wallet\Services\TransferService;
 use AppModules\Wallet\Services\BalanceValidator;
+use AppModules\Wallet\Services\WalletCreatorService;
 use AppModules\Wallet\Services\TransferStrategyFactory;
 use AppModules\Wallet\Repositories\Eloquent\WalletRepository;
+use AppModules\Wallet\Services\Interfaces\WalletCreatorInterface;
+use AppModules\Wallet\Services\Interfaces\WalletServiceInterface;
 use AppModules\Wallet\Services\Interfaces\TransferServiceInterface;
 use AppModules\Wallet\Services\Interfaces\BalanceValidatorInterface;
 use AppModules\Wallet\Repositories\Interfaces\WalletRepositoryInterface;
 use AppModules\User\Database\Repositories\Interfaces\UserRepositoryInterface;
 use AppModules\Authorization\Services\Interfaces\AuthorizationServiceInterface;
-use AppModules\Wallet\Services\Interfaces\WalletServiceInterface;
-use AppModules\Wallet\Services\WalletService;
 
 class WalletServiceProvider extends ServiceProvider
 {
@@ -28,6 +30,7 @@ class WalletServiceProvider extends ServiceProvider
         $this->app->bind(WalletRepositoryInterface::class, WalletRepository::class);
         $this->app->bind(BalanceValidatorInterface::class, BalanceValidator::class);
         $this->app->bind(WalletServiceInterface::class, WalletService::class);
+        $this->app->bind(WalletCreatorInterface::class, WalletCreatorService::class);
     }
 
     /**
