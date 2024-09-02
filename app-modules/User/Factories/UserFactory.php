@@ -3,21 +3,19 @@
 namespace AppModules\User\Factories;
 
 use Illuminate\Support\Arr;
+use AppModules\Wallet\Models\Wallet;
 use AppModules\User\Database\Repositories\Interfaces\CommonUserRepositoryInterface;
 use AppModules\User\Database\Repositories\Interfaces\MerchantUserRepositoryInterface;
+use AppModules\Wallet\Services\Interfaces\WalletCreatorInterface;
 
 class UserFactory
 {
-    protected $commonUserRepository;
-    protected $merchantUserRepository;
 
     public function __construct(
-        CommonUserRepositoryInterface $commonUserRepository,
-        MerchantUserRepositoryInterface $merchantUserRepository
-    ) {
-        $this->commonUserRepository = $commonUserRepository;
-        $this->merchantUserRepository = $merchantUserRepository;
-    }
+        protected CommonUserRepositoryInterface $commonUserRepository,
+        protected MerchantUserRepositoryInterface $merchantUserRepository,
+        protected WalletCreatorInterface $walletCreator
+    ) {}
 
     public function create(array $data)
     {
@@ -34,11 +32,15 @@ class UserFactory
 
     protected function createCommonUser(array $data)
     {
-        return $this->commonUserRepository->create($data);
+        $user = $this->commonUserRepository->create($data);
+        $this->walletCreator->createWalletForUser($user);
+        return $user;
     }
 
     protected function createMerchantUser(array $data)
     {
-        return $this->merchantUserRepository->create($data);
+        $user = $this->merchantUserRepository->create($data);
+        $this->walletCreator->createWalletForUser($user);
+        return $user;
     }
 }

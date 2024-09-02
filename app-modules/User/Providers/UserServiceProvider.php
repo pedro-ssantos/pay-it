@@ -5,6 +5,7 @@ namespace AppModules\User\Providers;
 use Illuminate\Support\ServiceProvider;
 use AppModules\User\Services\AuthService;
 use AppModules\User\Factories\UserFactory;
+use AppModules\Wallet\Services\Interfaces\WalletCreatorInterface;
 use AppModules\User\Database\Repositories\Eloquent\UserRepository;
 use AppModules\User\Database\Repositories\Eloquent\CommonUserRepository;
 use AppModules\User\Database\Repositories\Eloquent\MerchantUserRepository;
@@ -27,7 +28,8 @@ class UserServiceProvider extends ServiceProvider
         $this->app->singleton(UserFactory::class, function ($app) {
             return new UserFactory(
                 $app->make(CommonUserRepositoryInterface::class),
-                $app->make(MerchantUserRepositoryInterface::class)
+                $app->make(MerchantUserRepositoryInterface::class),
+                $app->make(WalletCreatorInterface::class)
             );
         });
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
