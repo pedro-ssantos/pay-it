@@ -9,6 +9,8 @@ class CommonUser extends User
 {
     use HasFactory;
 
+    protected $table = 'users';
+
     protected $fillable = [
         'name',
         'email',

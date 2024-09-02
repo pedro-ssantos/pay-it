@@ -2,20 +2,25 @@
 
 namespace AppModules\User\Tests\Unit;
 
-use Tests\TestCase;
 use Mockery;
+use Tests\TestCase;
 use Mockery\MockInterface;
 use AppModules\User\Models\CommonUser;
 use AppModules\User\Models\MerchantUser;
 use AppModules\User\Factories\UserFactory;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use AppModules\Wallet\Services\Interfaces\WalletCreatorInterface;
 use AppModules\User\Database\Repositories\Eloquent\CommonUserRepository;
 use AppModules\User\Database\Repositories\Eloquent\MerchantUserRepository;
 
 class UserFactoryTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected $commonUserRepositoryMock;
     protected $merchantUserRepositoryMock;
     protected $userFactory;
+    protected $walletCreatorMock;
 
     protected function setUp(): void
     {
@@ -23,10 +28,12 @@ class UserFactoryTest extends TestCase
 
         $this->commonUserRepositoryMock = Mockery::mock(CommonUserRepository::class);
         $this->merchantUserRepositoryMock = Mockery::mock(MerchantUserRepository::class);
+        $this->walletCreatorMock = Mockery::mock(WalletCreatorInterface::class);
 
         $this->userFactory = new UserFactory(
             $this->commonUserRepositoryMock,
-            $this->merchantUserRepositoryMock
+            $this->merchantUserRepositoryMock,
+            $this->walletCreatorMock
         );
     }
 
@@ -44,6 +51,10 @@ class UserFactoryTest extends TestCase
             ->once()
             ->with($data)
             ->andReturn(new CommonUser($data));
+
+        $this->walletCreatorMock
+            ->shouldReceive('createWalletForUser')
+            ->once();
 
         $user = $this->userFactory->create($data);
 
@@ -65,6 +76,10 @@ class UserFactoryTest extends TestCase
             ->once()
             ->with($data)
             ->andReturn(new MerchantUser($data));
+
+        $this->walletCreatorMock
+            ->shouldReceive('createWalletForUser')
+            ->once();
 
         $user = $this->userFactory->create($data);
 
