@@ -35,6 +35,14 @@ class CreateUserFeatureTest extends TestCase
             'type' => 'common_user',
             'cpf' => '12345678901',
         ]);
+
+        // Verificar se a carteira foi associada
+        $user = \AppModules\User\Models\CommonUser::where('email', 'john@example.com')->first();
+        $this->assertNotNull($user->wallet);
+        $this->assertDatabaseHas('wallets', [
+            'user_id' => $user->id,
+            'balance' => 0, // Verifica se o saldo inicial é zero
+        ]);
     }
 
     public function test_it_creates_a_merchant_user_via_post_request()
@@ -63,6 +71,14 @@ class CreateUserFeatureTest extends TestCase
             'type' => 'merchant_user',
             'cnpj' => '12345678901234',
         ]);
+
+         // Verificar se a carteira foi associada
+         $user = \AppModules\User\Models\MerchantUser::where('email', 'jane@example.com')->first();
+         $this->assertNotNull($user->wallet);
+         $this->assertDatabaseHas('wallets', [
+             'user_id' => $user->id,
+             'balance' => 0, // Verifica se o saldo inicial é zero
+         ]);
     }
 
     public function test_it_validates_cpf_and_cnpj()
